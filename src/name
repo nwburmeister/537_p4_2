@@ -1,0 +1,240 @@
+vm.c:  if(p->kstack == 0)
+vm.c:  if(p->pgdir == 0)
+vm.c:  mycpu()->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+vm.c:  lcr3(V2P(p->pgdir));  // switch to process's address space
+proc.c:      if(p->state == UNUSED)
+proc.c:  p->state = EMBRYO;
+proc.c:  p->pid = nextpid++;
+proc.c:  if((p->kstack = kalloc()) == 0){
+proc.c:    p->state = UNUSED;
+proc.c:  sp = p->kstack + KSTACKSIZE;
+proc.c:  sp -= sizeof *p->tf;
+proc.c:  p->tf = (struct trapframe*)sp;
+proc.c:  sp -= sizeof *p->context;
+proc.c:  p->context = (struct context*)sp;
+proc.c:  memset(p->context, 0, sizeof *p->context);
+proc.c:  p->context->eip = (uint)forkret;
+proc.c:  if((p->pgdir = setupkvm()) == 0)
+proc.c:  inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
+proc.c:  p->sz = PGSIZE;
+proc.c:  memset(p->tf, 0, sizeof(*p->tf));
+proc.c:  p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
+proc.c:  p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
+proc.c:  p->tf->es = p->tf->ds;
+proc.c:  p->tf->ss = p->tf->ds;
+proc.c:  p->tf->eflags = FL_IF;
+proc.c:  p->tf->esp = PGSIZE;
+proc.c:  p->tf->eip = 0;  // beginning of initcode.S
+proc.c:  safestrcpy(p->name, "initcode", sizeof(p->name));
+proc.c:  p->cwd = namei("/");
+proc.c:  // this assignment to p->state lets other cores
+proc.c:  p->state = RUNNABLE;
+proc.c:  p->priority = 3;
+proc.c:    if(p->parent == curproc){
+proc.c:      p->parent = initproc;
+proc.c:      if(p->state == ZOMBIE)
+proc.c:      if(p->parent != curproc)
+proc.c:      if(p->state == ZOMBIE){
+proc.c:        pid = p->pid;
+proc.c:        kfree(p->kstack);
+proc.c:        p->kstack = 0;
+proc.c:        freevm(p->pgdir);
+proc.c:        p->pid = 0;
+proc.c:        p->parent = 0;
+proc.c:        p->name[0] = 0;
+proc.c:        p->killed = 0;
+proc.c:        p->state = UNUSED;
+proc.c:            if (p->state == RUNNABLE){
+proc.c:                p->state = RUNNING;
+proc.c:                swtch(&(c->scheduler), p->context);
+proc.c://      if(p->state != RUNNABLE){}
+proc.c://      p->state = RUNNING;
+proc.c://      swtch(&(c->scheduler), p->context);
+proc.c://      // It should have changed its p->state before coming back.
+proc.c:  if(p->state == RUNNING)
+proc.c:  swtch(&p->context, mycpu()->scheduler);
+proc.c:  // change p->state and then call sched.
+proc.c:  p->chan = chan;
+proc.c:  p->state = SLEEPING;
+proc.c:  p->chan = 0;
+proc.c:    if(p->state == SLEEPING && p->chan == chan)
+proc.c:      p->state = RUNNABLE;
+proc.c:    if(p->pid == pid){
+proc.c:      p->killed = 1;
+proc.c:      if(p->state == SLEEPING)
+proc.c:        p->state = RUNNABLE;
+proc.c:    if(p->state == UNUSED)
+proc.c:    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+proc.c:      state = states[p->state];
+proc.c:    cprintf("%d %s %s", p->pid, state, p->name);
+proc.c:    if(p->state == SLEEPING){
+proc.c:      getcallerpcs((uint*)p->context->ebp+2, pc);
+proc.c:        if( p->pid == PID ){
+proc.c:            p->priority = pri;
+proc.c:            ptable.pid[position] = p->pid;
+proc.c:            p->next = NULL;
+proc.c:        if (p->pid == PID) {
+proc.c:            return p->priority;
+proc.c:            printf(1, "%s\n", p->name)
+umalloc.c:  for(p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
+umalloc.c:    if(p >= p->s.ptr && (bp > p || bp < p->s.ptr))
+umalloc.c:  if(bp + bp->s.size == p->s.ptr){
+umalloc.c:    bp->s.size += p->s.ptr->s.size;
+umalloc.c:    bp->s.ptr = p->s.ptr->s.ptr;
+umalloc.c:    bp->s.ptr = p->s.ptr;
+umalloc.c:  if(p + p->s.size == bp){
+umalloc.c:    p->s.size += bp->s.size;
+umalloc.c:    p->s.ptr = bp->s.ptr;
+umalloc.c:    p->s.ptr = bp;
+umalloc.c:  for(p = prevp->s.ptr; ; prevp = p, p = p->s.ptr){
+umalloc.c:    if(p->s.size >= nunits){
+umalloc.c:      if(p->s.size == nunits)
+umalloc.c:        prevp->s.ptr = p->s.ptr;
+umalloc.c:        p->s.size -= nunits;
+umalloc.c:        p += p->s.size;
+umalloc.c:        p->s.size = nunits;
+usertests.c:// does chdir() call iput(p->cwd) in a transaction?
+usertests.c:// does exit() call iput(p->cwd) in a transaction?
+ls.c:  for(p=path+strlen(path); p >= path && *p != '/'; p--)
+pipe.c:  p->readopen = 1;
+pipe.c:  p->writeopen = 1;
+pipe.c:  p->nwrite = 0;
+pipe.c:  p->nread = 0;
+pipe.c:  initlock(&p->lock, "pipe");
+pipe.c:  acquire(&p->lock);
+pipe.c:    p->writeopen = 0;
+pipe.c:    wakeup(&p->nread);
+pipe.c:    p->readopen = 0;
+pipe.c:    wakeup(&p->nwrite);
+pipe.c:  if(p->readopen == 0 && p->writeopen == 0){
+pipe.c:    release(&p->lock);
+pipe.c:    release(&p->lock);
+pipe.c:  acquire(&p->lock);
+pipe.c:    while(p->nwrite == p->nread + PIPESIZE){  //DOC: pipewrite-full
+pipe.c:      if(p->readopen == 0 || myproc()->killed){
+pipe.c:        release(&p->lock);
+pipe.c:      wakeup(&p->nread);
+pipe.c:      sleep(&p->nwrite, &p->lock);  //DOC: pipewrite-sleep
+pipe.c:    p->data[p->nwrite++ % PIPESIZE] = addr[i];
+pipe.c:  wakeup(&p->nread);  //DOC: pipewrite-wakeup1
+pipe.c:  release(&p->lock);
+pipe.c:  acquire(&p->lock);
+pipe.c:  while(p->nread == p->nwrite && p->writeopen){  //DOC: pipe-empty
+pipe.c:      release(&p->lock);
+pipe.c:    sleep(&p->nread, &p->lock); //DOC: piperead-sleep
+pipe.c:    if(p->nread == p->nwrite)
+pipe.c:    addr[i] = p->data[p->nread++ % PIPESIZE];
+pipe.c:  wakeup(&p->nwrite);  //DOC: piperead-wakeup
+pipe.c:  release(&p->lock);
+kernel.asm:  p->readopen = 1;
+kernel.asm:  p->writeopen = 1;
+kernel.asm:  p->nwrite = 0;
+kernel.asm:  p->nread = 0;
+kernel.asm:  initlock(&p->lock, "pipe");
+kernel.asm:  acquire(&p->lock);
+kernel.asm:    p->writeopen = 0;
+kernel.asm:    wakeup(&p->nread);
+kernel.asm:    p->readopen = 0;
+kernel.asm:    wakeup(&p->nwrite);
+kernel.asm:  if(p->readopen == 0 && p->writeopen == 0){
+kernel.asm:    release(&p->lock);
+kernel.asm:    release(&p->lock);
+kernel.asm:    p->readopen = 0;
+kernel.asm:    wakeup(&p->nwrite);
+kernel.asm:    release(&p->lock);
+kernel.asm:  acquire(&p->lock);
+kernel.asm:    while(p->nwrite == p->nread + PIPESIZE){  //DOC: pipewrite-full
+kernel.asm:      if(p->readopen == 0 || myproc()->killed){
+kernel.asm:        release(&p->lock);
+kernel.asm:      wakeup(&p->nread);
+kernel.asm:      sleep(&p->nwrite, &p->lock);  //DOC: pipewrite-sleep
+kernel.asm:        release(&p->lock);
+kernel.asm:    p->data[p->nwrite++ % PIPESIZE] = addr[i];
+kernel.asm:  wakeup(&p->nread);  //DOC: pipewrite-wakeup1
+kernel.asm:  release(&p->lock);
+kernel.asm:    p->data[p->nwrite++ % PIPESIZE] = addr[i];
+kernel.asm:  wakeup(&p->nread);  //DOC: pipewrite-wakeup1
+kernel.asm:  release(&p->lock);
+kernel.asm:  acquire(&p->lock);
+kernel.asm:  while(p->nread == p->nwrite && p->writeopen){  //DOC: pipe-empty
+kernel.asm:      release(&p->lock);
+kernel.asm:    sleep(&p->nread, &p->lock); //DOC: piperead-sleep
+kernel.asm:      release(&p->lock);
+kernel.asm:    if(p->nread == p->nwrite)
+kernel.asm:    addr[i] = p->data[p->nread++ % PIPESIZE];
+kernel.asm:  wakeup(&p->nwrite);  //DOC: piperead-wakeup
+kernel.asm:  release(&p->lock);
+kernel.asm:    if(p->state == SLEEPING && p->chan == chan)
+kernel.asm:      p->state = RUNNABLE;
+kernel.asm:      if(p->state == UNUSED)
+kernel.asm:  p->state = EMBRYO;
+kernel.asm:  p->pid = nextpid++;
+kernel.asm:  if((p->kstack = kalloc()) == 0){
+kernel.asm:  sp -= sizeof *p->tf;
+kernel.asm:  p->tf = (struct trapframe*)sp;
+kernel.asm:  sp -= sizeof *p->context;
+kernel.asm:  p->context = (struct context*)sp;
+kernel.asm:  memset(p->context, 0, sizeof *p->context);
+kernel.asm:  p->context->eip = (uint)forkret;
+kernel.asm:    p->state = UNUSED;
+kernel.asm:  if((p->pgdir = setupkvm()) == 0)
+kernel.asm:  inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
+kernel.asm:  p->sz = PGSIZE;
+kernel.asm:  memset(p->tf, 0, sizeof(*p->tf));
+kernel.asm:  p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
+kernel.asm:  p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
+kernel.asm:  p->tf->es = p->tf->ds;
+kernel.asm:  p->tf->ss = p->tf->ds;
+kernel.asm:  p->tf->eflags = FL_IF;
+kernel.asm:  p->tf->esp = PGSIZE;
+kernel.asm:  p->tf->eip = 0;  // beginning of initcode.S
+kernel.asm:  safestrcpy(p->name, "initcode", sizeof(p->name));
+kernel.asm:  p->cwd = namei("/");
+kernel.asm:  p->state = RUNNABLE;
+kernel.asm:  p->priority = 3;
+kernel.asm:            if (p->state == RUNNABLE){
+kernel.asm:                p->state = RUNNING;
+kernel.asm:                swtch(&(c->scheduler), p->context);
+kernel.asm:  if(p->state == RUNNING)
+kernel.asm:  swtch(&p->context, mycpu()->scheduler);
+kernel.asm:    if(p->parent == curproc){
+kernel.asm:      p->parent = initproc;
+kernel.asm:      if(p->state == ZOMBIE)
+kernel.asm:  p->chan = chan;
+kernel.asm:  p->state = SLEEPING;
+kernel.asm:  p->chan = 0;
+kernel.asm:        pid = p->pid;
+kernel.asm:        kfree(p->kstack);
+kernel.asm:        p->kstack = 0;
+kernel.asm:        freevm(p->pgdir);
+kernel.asm:        p->pid = 0;
+kernel.asm:        p->parent = 0;
+kernel.asm:        p->name[0] = 0;
+kernel.asm:        p->killed = 0;
+kernel.asm:        p->state = UNUSED;
+kernel.asm:      if(p->parent != curproc)
+kernel.asm:      if(p->state == ZOMBIE){
+kernel.asm:    if(p->pid == pid){
+kernel.asm:      p->killed = 1;
+kernel.asm:      if(p->state == SLEEPING)
+kernel.asm:        p->state = RUNNABLE;
+kernel.asm:        p->state = RUNNABLE;
+kernel.asm:    if(p->state == UNUSED)
+kernel.asm:    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+kernel.asm:      state = states[p->state];
+kernel.asm:    cprintf("%d %s %s", p->pid, state, p->name);
+kernel.asm:    if(p->state == SLEEPING){
+kernel.asm:      getcallerpcs((uint*)p->context->ebp+2, pc);
+kernel.asm:    if(p->state == UNUSED)
+kernel.asm:    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+kernel.asm:      getcallerpcs((uint*)p->context->ebp+2, pc);
+kernel.asm:            p->next = NULL;
+kernel.asm:        if( p->pid == PID ){
+kernel.asm:            p->priority = pri;
+kernel.asm:            ptable.pid[position] = p->pid;
+kernel.asm:        if (p->pid == PID) {
+kernel.asm:            return p->priority;
+kernel.asm:  if(p->kstack == 0)
+kernel.asm:  if(p->pgdir == 0)
+kernel.asm:  mycpu()->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+kernel.asm:  lcr3(V2P(p->pgdir));  // switch to process's address space
