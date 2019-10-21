@@ -33,6 +33,7 @@ int
 main(int argc, char *argv[])
 {
   struct pstat st;
+  
   check(getpinfo(&st) == 0, "getpinfo");
 
   // Push this thread to the bottom
@@ -62,12 +63,13 @@ main(int argc, char *argv[])
     check(getpinfo(&st) == 0, "getpinfo");
     
     for (j = 0; j < NPROC; j++) {
+      // printf(1, "%d\n", st.inuse[j]);
       if (st.inuse[j] && st.pid[j] >= 3 && st.pid[j] != getpid()) {
-	    DEBUG_PRINT((1, "XV6_SCHEDULER\t CHILD\n"));
+	    //DEBUG_PRINT((1, "XV6_SCHEDULER\t CHILD\n"));
         //DEBUG_PRINT((1, "pid: %d\n", st.pid[j]));
         for (k = 3; k >= 0; k--) {
-          DEBUG_PRINT((1, "XV6_SCHEDULER\t \t level %d ticks used %d\n", k, st.ticks[j][k]));
-	        DEBUG_PRINT((1, "XV6_SCHEDULER\t \t level %d qtail %d\n", k, st.qtail[j][k]));
+          //DEBUG_PRINT((1, "XV6_SCHEDULER\t \t level %d ticks used %d\n", k, st.ticks[j][k]));
+	        //DEBUG_PRINT((1, "XV6_SCHEDULER\t \t level %d qtail %d\n", k, st.qtail[j][k]));
         }
       } 
     }
@@ -77,7 +79,7 @@ main(int argc, char *argv[])
     wait();
   }
 
-  //printf(1, "TEST PASSED");
+  // printf(1, "TEST PASSED");
 
   exit();
 }
