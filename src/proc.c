@@ -42,10 +42,11 @@ void deleteFromQueue(struct proc *p, int priority){
   struct proc *p_curr;
   
   for(p_curr = priorityQueue[priority].head; p_curr != NULL;) {
-    if (p->pid == p_curr->pid){
+    if (p == p_curr){
+      
       if (priorityQueue[priority].head == NULL && priorityQueue[priority].tail == NULL) {
         //cprintf("%s\n", "modified 1");
-        
+        p_curr->next = NULL;
       } else if (priorityQueue[priority].head == priorityQueue[priority].tail){
         //cprintf("%s\n", "modified 2");
         priorityQueue[priority].head = NULL;
@@ -71,6 +72,7 @@ void deleteFromQueue(struct proc *p, int priority){
       }
       break;
     }
+    cprintf("%s\n", "here");
     prevProc = p_curr;
     p_curr = p_curr->next;
   }
@@ -390,6 +392,74 @@ wait(void)
   }
 }
 
+
+void
+scheduler(void)
+{
+    struct proc *p;
+    //struct proc *last = NULL;
+    struct cpu *c = mycpu();
+    c->proc = 0;
+
+    for (;;) {
+        // Enable interrupts on this processor.
+        sti();
+        // Loop over process table looking for process to run.
+        acquire(&ptable.lock);
+
+        int i = 0;
+        for (i = 3; i >= 0; i--){
+          for(p = priorityQueue[i].head; p != NULL;) {
+            if (p->state == RUNNABLE){
+              goto foundPROC;
+            }else {
+              deleteFromQueue(p, i);
+              i = -1;
+            }
+            p = p->next;
+          }
+        }
+        release(&ptable.lock);
+        
+        foundPROC:
+          
+          c->proc = p;
+          switchuvm(p);
+          p->state = RUNNING;
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+          c->proc = 0;
+
+          p->ticks++;
+          printQueue();
+
+          if (p->state == RUNNABLE){
+            //cprintf("PID: %d TICKS: %d level: %d\n", p->pid, p->ticks, i);
+            if (p->ticks == timeslices[i]) {
+              p->agg_ticks[i] += p->ticks;
+              p->ticks = 0;
+              deleteFromQueue(p, i);
+              enqueueProc(p, i);
+            }
+          } else {
+            //cprintf("PID: %d TICKS: %d level: %d\n", p->pid, p->ticks, i);
+            if (p->ticks == timeslices[i]) {
+              p->agg_ticks[i] += p->ticks;
+              p->ticks = 0;
+              deleteFromQueue(p, i);
+              enqueueProc(p, i);
+            }
+            deleteFromQueue(p, i);
+          }
+
+        release(&ptable.lock);
+  }
+}
+
+
+
+
+
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -398,7 +468,7 @@ wait(void)
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
 void
-scheduler(void)
+scheduler2(void)
 {
     struct proc *p;
     struct proc *last = NULL;
@@ -436,6 +506,7 @@ scheduler(void)
                       }
                       p->ticks++;
                       last = p;
+                      
                     }
 
                     if (last != NULL && last->pid != p->pid){
@@ -601,11 +672,11 @@ wakeup1(void *chan)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan){
         p->state = RUNNABLE;
+        p->agg_ticks[p->priority] += p->ticks;
+        p->ticks = 0;
         deleteFromQueue(p, p->priority);
         enqueueProc(p, p->priority);
         p->qtail[p->priority]++;
-
-        p->ticks = 0;
     }
 }
 
